@@ -13,10 +13,29 @@
   <link rel="stylesheet" type="text/css" href="/semantic/dist/semantic.min.css">
   <link rel="stylesheet" type="text/css" href="/vis/dist/vis-timeline-graph2d.min.css">
 
-  <script src="/vis/dist/vis.min.js" ></script>
-  <script src="/jquery/dist/jquery-3.2.1.min.js" ></script>
-  <script src="/semantic/dist/semantic.min.js" ></script>
-  <script src="/moment/dist/moment.min.js" ></script>
+  <script src="/vis/dist/vis.min.js"></script>
+  <script src="/jquery/dist/jquery-3.2.1.min.js"></script>
+  <script src="/semantic/dist/semantic.min.js"></script>
+  <script src="/moment/dist/moment.min.js"></script>
+
+  <script type="text/javascript">
+    video = <%- JSON.stringify(video) %>;
+    const addComment = (note) => {
+      $.post('/note', {
+        owner: video.id,
+        startSecond: parseInt(player.getCurrentTime()),
+        text: $('#noteText').val(),
+      }, (data) => {
+        console.log(data);
+      });
+    };
+
+    $(() => {
+      $('#addNoteButton').click(addComment);
+    });
+
+  </script>
+
 
   <style type="text/css">
     body {
@@ -51,6 +70,12 @@
         <i class="hand spock icon"></i> Spoiler
       </a>
       <a href="#" class="item">Home</a>
+      <div class="right menu">
+        <a class="item">
+          <%= user.name %>
+        </a>
+        <a class="item" href="/logout">Log Out</a>
+      </div>
     </div>
   </div>
 
@@ -67,13 +92,13 @@
         <div class="ui form">
           <div class="field">
             <h3>Note</h3>
-            <textarea></textarea>
+            <textarea id="noteText"></textarea>
           </div>
           <div class="ui teal labeled icon button">
             Start Video
             <i class="play icon"></i>
           </div>
-          <div class="ui teal labeled icon button">
+          <div id="addNoteButton" class="ui teal labeled icon button">
             Add Note
             <i class="edit icon"></i>
           </div>
@@ -101,32 +126,32 @@
   </div>
 </body>
 <script type="text/javascript">
-  var container = document.getElementById('visualization');
+    var container = document.getElementById('visualization');
 
-  var items = new vis.DataSet();
-  var startDate = moment();
+    var items = new vis.DataSet();
+    var startDate = moment();
 
-  for (var i = 0; i < 30; i++) {
-    items.add({
-      id: i,
-      content: "item " + i,
-      start: startDate.add(i, 'day').format('YYYY-MM-DD'),
-    });
-  }
-  console.log(items);
+    for (var i = 0; i < 30; i++) {
+      items.add({
+        id: i,
+        content: "item " + i,
+        start: startDate.add(i, 'day').format('YYYY-MM-DD'),
+      });
+    }
+    console.log(items);
 
-  // Configuration for the Timeline
-  // specify options
-  var options = {
-    start: startDate.format('YYYY-MM-DD'),
-    end: startDate.add(120, 'day').format('YYYY-MM-DD'),
-    max: '2017-06-12',
-    rollingMode: true,
-    zoomable: false,
-  };
+    // Configuration for the Timeline
+    // specify options
+    var options = {
+      start: startDate.format('YYYY-MM-DD'),
+      end: startDate.add(120, 'day').format('YYYY-MM-DD'),
+      max: '2017-06-12',
+      rollingMode: true,
+      zoomable: false,
+    };
 
-  // create a Timeline
-  timeline = new vis.Timeline(container, items, options);
+    // create a Timeline
+    timeline = new vis.Timeline(container, items, options);
 
 </script>
 <script>
@@ -141,7 +166,7 @@
 
   // 3. This function creates an <iframe> (and YouTube player)
   //    after the API code downloads.
-  let player;
+  player;
   function onYouTubeIframeAPIReady() {
     player = new YT.Player('player', {
       height: '390',
@@ -163,11 +188,11 @@
   // 5. The API calls this function when the player's state changes.
   //    The function indicates that when playing a video (state=1),
   //    the player should play for six seconds and then stop.
-  let done = false;
+  done = false;
   function onPlayerStateChange(event) {
     console.log('[onPlayerStateChange]', event);
     if (event.data == YT.PlayerState.PLAYING && !done) {
-      setTimeout(stopVideo, 6000);
+      setTimeout(stopVideo, 30000);
       done = true;
     }
   }

@@ -12,8 +12,8 @@ module.exports = {
       type: 'string',
       unique: true
     },
-    comments: {
-      collection: 'comment',
+    notes: {
+      collection: 'note',
       via: 'owner',
     }
   }
