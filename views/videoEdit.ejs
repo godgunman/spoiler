@@ -13,10 +13,10 @@
   <link rel="stylesheet" type="text/css" href="/semantic/dist/semantic.min.css">
   <link rel="stylesheet" type="text/css" href="/vis/dist/vis-timeline-graph2d.min.css">
 
-  <script src="/vis/dist/vis.min.js" />
-  <script src="/semantic/dist/semantic.min.js" />
-
-  </script>
+  <script src="/vis/dist/vis.min.js" ></script>
+  <script src="/jquery/dist/jquery-3.2.1.min.js" ></script>
+  <script src="/semantic/dist/semantic.min.js" ></script>
+  <script src="/moment/dist/moment.min.js" ></script>
 
   <style type="text/css">
     body {
@@ -57,7 +57,8 @@
   <div class="ui grid" style="margin: 0px 5px 0px 5px;">
     <div class="ten wide column">
       <div class="ui container center aligned">
-        <iframe width="650" height="382" src="https://www.youtube.com/embed/EjKSTTl_n8k" frameborder="0" allowfullscreen></iframe>
+        <!--<iframe width="650" height="382" src="https://www.youtube.com/embed/EjKSTTl_n8k" frameborder="0" allowfullscreen></iframe>-->
+        <div id="player"></div>
       </div>
     </div>
     <div class="six wide column">
@@ -100,32 +101,79 @@
   </div>
 </body>
 <script type="text/javascript">
-  // DOM element where the Timeline will be attached
-  let container = document.getElementById('visualization');
+  var container = document.getElementById('visualization');
 
-  // Create a DataSet (allows two way data-binding)
-  let data = new vis.DataSet();
-  data.add([
-    { id: 1, content: 'item 1', start: 1 },
-    { id: 2, content: 'item 2', start: 2 },
-    { id: 3, content: 'item 3', start: 3 },
-    { id: 4, content: 'item 4', start: 4, end: 10 },
-    { id: 5, content: 'item 5', start: 5 },
-    { id: 6, content: 'item 6', start: 6 }
-  ]);
+  var items = new vis.DataSet();
+  var startDate = moment();
 
-  let items = data.get({
-    field: ['id', 'content'],
-    type: {
-      date: 'Number'
-    }
-  })
+  for (var i = 0; i < 30; i++) {
+    items.add({
+      id: i,
+      content: "item " + i,
+      start: startDate.add(i, 'day').format('YYYY-MM-DD'),
+    });
+  }
+  console.log(items);
 
   // Configuration for the Timeline
-  let options = { zoomable: false, max: 13 };
+  // specify options
+  var options = {
+    start: startDate.format('YYYY-MM-DD'),
+    end: startDate.add(120, 'day').format('YYYY-MM-DD'),
+    max: '2017-06-12',
+    rollingMode: true,
+    zoomable: false,
+  };
 
-  // Create a Timeline
-  let timeline = new vis.Timeline(container, items, options);
+  // create a Timeline
+  timeline = new vis.Timeline(container, items, options);
+
+</script>
+<script>
+  // 2. This code loads the IFrame Player API code asynchronously.
+  let tag = document.createElement('script');
+  const UNSTARTED = -1, ENDED = 0, PLAYING = 1, PAUSED = 2, BUFFERING = 3, VIDEO_CUED = 5;
+
+
+  tag.src = "https://www.youtube.com/iframe_api";
+  let firstScriptTag = document.getElementsByTagName('script')[0];
+  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+  // 3. This function creates an <iframe> (and YouTube player)
+  //    after the API code downloads.
+  let player;
+  function onYouTubeIframeAPIReady() {
+    player = new YT.Player('player', {
+      height: '390',
+      width: '640',
+      videoId: 'EjKSTTl_n8k',
+      events: {
+        'onReady': onPlayerReady,
+        'onStateChange': onPlayerStateChange
+      }
+    });
+  }
+
+  // 4. The API will call this function when the video player is ready.
+  function onPlayerReady(event) {
+    console.log('[onPlayerReady]', event);
+    event.target.playVideo();
+  }
+
+  // 5. The API calls this function when the player's state changes.
+  //    The function indicates that when playing a video (state=1),
+  //    the player should play for six seconds and then stop.
+  let done = false;
+  function onPlayerStateChange(event) {
+    console.log('[onPlayerStateChange]', event);
+    if (event.data == YT.PlayerState.PLAYING && !done) {
+      setTimeout(stopVideo, 6000);
+      done = true;
+    }
+  }
+  function stopVideo() {
+    player.stopVideo();
+  }
 
 </script>
 
