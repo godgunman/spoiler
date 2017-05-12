@@ -21,25 +21,6 @@
   <script src="http://kristw.github.io/d3kit-timeline/bower_components/d3kit/dist/d3kit.min.js"></script>
   <script src="http://kristw.github.io/d3kit-timeline/bower_components/labella/dist/labella.min.js"></script>
   <script src="http://kristw.github.io/d3kit-timeline/dist/d3kit-timeline.min.js"></script>
-
-  <script type="text/javascript">
-    video = <%- JSON.stringify(video) %>;
-    const addComment = (note) => {
-      $.post('/note', {
-        owner: video.id,
-        startSecond: parseInt(player.getCurrentTime()),
-        text: $('#noteText').val(),
-      }, (data) => {
-        console.log(data);
-      });
-    };
-
-    $(() => {
-      $('#addNoteButton').click(addComment);
-    });
-  </script>
-
-
   <style type="text/css">
     body {
       background-color: #FFFFFF;
@@ -128,40 +109,71 @@
     </div>
 </body>
 <script type="text/javascript">
-    /* globals d3, d3Kit, d3KitTimeline */
-    var data = [
-      { time: new Date(1977, 4, 25), episode: 4, name: 'A New Hope' },
-      { time: new Date(1980, 4, 17), episode: 5, name: 'The Empire Strikes Back' },
-      { time: new Date(1984, 4, 25), episode: 6, name: 'Return of the Jedi' },
-      { time: new Date(1999, 4, 19), episode: 1, name: 'The Phantom Menace' },
-      { time: new Date(2002, 4, 16), episode: 2, name: 'Attack of the Clones' },
-      { time: new Date(2005, 4, 19), episode: 3, name: 'Revenge of the Sith' },
-      { time: new Date(2015, 11, 18), episode: 7, name: 'The Force Awakens' },
-    ];
+  video = <%- JSON.stringify(video) %>;
+  user = <%- JSON.stringify(user) %>;
+  timelineData = [];
+  chart6 = null;
+  player;
 
-    var data2 = [
-      { time: 1, name: 'MÜller', team: 'GER' },
-      { time: 23, name: 'Klose', team: 'GER' },
-      { time: 24, name: 'Kroos', team: 'GER' },
-      { time: 26, name: 'Kroos', team: 'GER' },
-      { time: 29, name: 'Khedira', team: 'GER' },
-      { time: 69, name: 'SchÜrrle', team: 'GER' },
-      { time: 79, name: 'SchÜrrle', team: 'GER' },
-      { time: 90, name: 'Oscar', team: 'BRA' },
-      { time: 90, name: 'Oscar2', team: 'BRA' },
-    ];
+  const updateTimeline = () => {
+    $.get(`/note?owner=${video.id}`, (data) => {
+      timelineData = data.map((e) => {
+        return {
+          time: e.startSecond,
+          name: e.text,
+          team: 'GER'
+        };
+      });
+      chart6.data(timelineData).resizeToFit();
+    });
+  };
 
-    var colorScale = d3.scale.category10();
+  const addComment = (note) => {
+    $.post('/note', {
+      owner: video.id,
+      startSecond: parseInt(player.getCurrentTime()),
+      text: $('#noteText').val(),
+    }, (data) => {
+      updateTimeline();
+      console.log(data);
+    });
+  };
 
-    function color6(d) {
-      return colorScale(d.team);
-    }
+  /* globals d3, d3Kit, d3KitTimeline */
+  var data = [
+    { time: new Date(1977, 4, 25), episode: 4, name: 'A New Hope' },
+    { time: new Date(1980, 4, 17), episode: 5, name: 'The Empire Strikes Back' },
+    { time: new Date(1984, 4, 25), episode: 6, name: 'Return of the Jedi' },
+    { time: new Date(1999, 4, 19), episode: 1, name: 'The Phantom Menace' },
+    { time: new Date(2002, 4, 16), episode: 2, name: 'Attack of the Clones' },
+    { time: new Date(2005, 4, 19), episode: 3, name: 'Revenge of the Sith' },
+    { time: new Date(2015, 11, 18), episode: 7, name: 'The Force Awakens' },
+  ];
 
-    var chart6 = new d3KitTimeline('#timeline6', {
+  var data2 = [
+    { time: 1, name: 'MÜller', team: 'GER' },
+    { time: 23, name: 'Klose', team: 'GER' },
+    { time: 24, name: 'Kroos', team: 'GER' },
+    { time: 26, name: 'Kroos', team: 'GER' },
+    { time: 29, name: 'Khedira', team: 'GER' },
+    { time: 69, name: 'SchÜrrle', team: 'GER' },
+    { time: 79, name: 'SchÜrrle', team: 'GER' },
+    { time: 90, name: 'Oscar', team: 'BRA' },
+    { time: 90, name: 'Oscar2', team: 'BRA' },
+  ];
+
+  var colorScale = d3.scale.category10();
+
+  function color6(d) {
+    return colorScale(d.team);
+  }
+
+  const timelineInit = () => {
+    chart6 = new d3KitTimeline('#timeline6', {
       direction: 'up',
       initialWidth: 804,
       scale: d3.scale.linear(),
-      domain: [0, 90],
+      domain: [0, parseInt(player.getDuration())],
       margin: { left: 20, right: 20, top: 20, bottom: 30 },
       textFn: function (d) { return d.name; },
       layerGap: 40,
@@ -180,10 +192,14 @@
       }
     });
     chart6.axis.tickFormat(function (d) { return d + '\''; });
-    chart6.data(data2).resizeToFit();
+  }
 
-</script>
-<script>
+
+  $(() => {
+    $('#addNoteButton').click(addComment);
+    updateTimeline();
+  });
+
   // 2. This code loads the IFrame Player API code asynchronously.
   let tag = document.createElement('script');
   const UNSTARTED = -1, ENDED = 0, PLAYING = 1, PAUSED = 2, BUFFERING = 3, VIDEO_CUED = 5;
@@ -195,8 +211,6 @@
 
   // 3. This function creates an <iframe> (and YouTube player)
   //    after the API code downloads.
-  player;
-  timer = null;
 
   function onYouTubeIframeAPIReady() {
     player = new YT.Player('player', {
@@ -211,21 +225,18 @@
   }
 
   function stopTimerForVideoSecondText() {
-    clearInterval(timer);
     $('#playerSecond').text(0);
-  }
-
-  function startTimerForVideoSecondText() {
-    timer = setInterval(() => {
-      $('#playerSecond').text(parseInt(player.getCurrentTime()) + 1);
-    }, 1000);
   }
 
   // 4. The API will call this function when the video player is ready.
   function onPlayerReady(event) {
     console.log('[onPlayerReady]', event);
+    setInterval(() => {
+      $('#playerSecond').text(parseInt(player.getCurrentTime()) + 1);
+    }, 100);
+    timelineInit();
+
     event.target.playVideo();
-    startTimerForVideoSecondText();
   }
 
   // 5. The API calls this function when the player's state changes.
@@ -235,7 +246,6 @@
   function onPlayerStateChange(event) {
     console.log('[onPlayerStateChange]', event);
     if (event.data == YT.PlayerState.PLAYING && !done) {
-      setTimeout(stopVideo, 30000);
       done = true;
     }
   }
