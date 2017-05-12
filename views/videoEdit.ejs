@@ -17,6 +17,10 @@
   <script src="/jquery/dist/jquery-3.2.1.min.js"></script>
   <script src="/semantic/dist/semantic.min.js"></script>
   <script src="/moment/dist/moment.min.js"></script>
+  <script src="http://kristw.github.io/d3kit-timeline/bower_components/d3/d3.min.js"></script>
+  <script src="http://kristw.github.io/d3kit-timeline/bower_components/d3kit/dist/d3kit.min.js"></script>
+  <script src="http://kristw.github.io/d3kit-timeline/bower_components/labella/dist/labella.min.js"></script>
+  <script src="http://kristw.github.io/d3kit-timeline/dist/d3kit-timeline.min.js"></script>
 
   <script type="text/javascript">
     video = <%- JSON.stringify(video) %>;
@@ -33,7 +37,6 @@
     $(() => {
       $('#addNoteButton').click(addComment);
     });
-
   </script>
 
 
@@ -94,13 +97,12 @@
             <h3>Note</h3>
             <textarea id="noteText"></textarea>
           </div>
-          <div class="ui teal labeled icon button">
-            Start Video
-            <i class="play icon"></i>
-          </div>
           <div id="addNoteButton" class="ui teal labeled icon button">
             Add Note
             <i class="edit icon"></i>
+          </div>
+          <div class="ui label">
+            You will add a note at <b id="playerSecond">0</b> seconds
           </div>
         </div>
       </div>
@@ -112,46 +114,73 @@
     </div>
   </div>
   <div class="ui center aligned container">
-    <div id="visualization"></div>
-  </div>
-  <div class="ui inverted vertical footer segment">
-    <div class="ui center aligned container">
-      <i class="hand spock icon"></i>
-      <div class="ui horizontal inverted small divided link list">
-        <a class="item" href="#">Contact Us</a>
-        <a class="item" href="#">Terms and Conditions</a>
-        <a class="item" href="#">Privacy Policy</a>
+    <div class="timeline" id="timeline6">
+    </div>
+    <div class="ui inverted vertical footer segment">
+      <div class="ui center aligned container">
+        <i class="hand spock icon"></i>
+        <div class="ui horizontal inverted small divided link list">
+          <a class="item" href="#">Contact Us</a>
+          <a class="item" href="#">Terms and Conditions</a>
+          <a class="item" href="#">Privacy Policy</a>
+        </div>
       </div>
     </div>
-  </div>
 </body>
 <script type="text/javascript">
-    var container = document.getElementById('visualization');
+    /* globals d3, d3Kit, d3KitTimeline */
+    var data = [
+      { time: new Date(1977, 4, 25), episode: 4, name: 'A New Hope' },
+      { time: new Date(1980, 4, 17), episode: 5, name: 'The Empire Strikes Back' },
+      { time: new Date(1984, 4, 25), episode: 6, name: 'Return of the Jedi' },
+      { time: new Date(1999, 4, 19), episode: 1, name: 'The Phantom Menace' },
+      { time: new Date(2002, 4, 16), episode: 2, name: 'Attack of the Clones' },
+      { time: new Date(2005, 4, 19), episode: 3, name: 'Revenge of the Sith' },
+      { time: new Date(2015, 11, 18), episode: 7, name: 'The Force Awakens' },
+    ];
 
-    var items = new vis.DataSet();
-    var startDate = moment();
+    var data2 = [
+      { time: 1, name: 'MÜller', team: 'GER' },
+      { time: 23, name: 'Klose', team: 'GER' },
+      { time: 24, name: 'Kroos', team: 'GER' },
+      { time: 26, name: 'Kroos', team: 'GER' },
+      { time: 29, name: 'Khedira', team: 'GER' },
+      { time: 69, name: 'SchÜrrle', team: 'GER' },
+      { time: 79, name: 'SchÜrrle', team: 'GER' },
+      { time: 90, name: 'Oscar', team: 'BRA' },
+      { time: 90, name: 'Oscar2', team: 'BRA' },
+    ];
 
-    for (var i = 0; i < 30; i++) {
-      items.add({
-        id: i,
-        content: "item " + i,
-        start: startDate.add(i, 'day').format('YYYY-MM-DD'),
-      });
+    var colorScale = d3.scale.category10();
+
+    function color6(d) {
+      return colorScale(d.team);
     }
-    console.log(items);
 
-    // Configuration for the Timeline
-    // specify options
-    var options = {
-      start: startDate.format('YYYY-MM-DD'),
-      end: startDate.add(120, 'day').format('YYYY-MM-DD'),
-      max: '2017-06-12',
-      rollingMode: true,
-      zoomable: false,
-    };
-
-    // create a Timeline
-    timeline = new vis.Timeline(container, items, options);
+    var chart6 = new d3KitTimeline('#timeline6', {
+      direction: 'up',
+      initialWidth: 804,
+      scale: d3.scale.linear(),
+      domain: [0, 90],
+      margin: { left: 20, right: 20, top: 20, bottom: 30 },
+      textFn: function (d) { return d.name; },
+      layerGap: 40,
+      dotColor: color6,
+      labelBgColor: color6,
+      linkColor: color6,
+      labella: {
+        maxPos: 764,
+        algorithm: 'simple'
+      },
+      textStyle: {
+        'fill': function (d) { return d.team === 'BRA' ? '#000' : '#fff' },
+        'text-decoration': function (d) { return d.team === 'BRA' ? 'none' : 'underline' },
+        'font-weight': function (d) { return d.team === 'BRA' ? 700 : 400 },
+        'comment-id': function (d) { return 1; }
+      }
+    });
+    chart6.axis.tickFormat(function (d) { return d + '\''; });
+    chart6.data(data2).resizeToFit();
 
 </script>
 <script>
@@ -167,6 +196,8 @@
   // 3. This function creates an <iframe> (and YouTube player)
   //    after the API code downloads.
   player;
+  timer = null;
+
   function onYouTubeIframeAPIReady() {
     player = new YT.Player('player', {
       height: '390',
@@ -179,10 +210,22 @@
     });
   }
 
+  function stopTimerForVideoSecondText() {
+    clearInterval(timer);
+    $('#playerSecond').text(0);
+  }
+
+  function startTimerForVideoSecondText() {
+    timer = setInterval(() => {
+      $('#playerSecond').text(parseInt(player.getCurrentTime()) + 1);
+    }, 1000);
+  }
+
   // 4. The API will call this function when the video player is ready.
   function onPlayerReady(event) {
     console.log('[onPlayerReady]', event);
     event.target.playVideo();
+    startTimerForVideoSecondText();
   }
 
   // 5. The API calls this function when the player's state changes.
@@ -198,6 +241,7 @@
   }
   function stopVideo() {
     player.stopVideo();
+    stopTimerForVideoSecondText();
   }
 
 </script>
