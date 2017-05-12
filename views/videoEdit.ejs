@@ -122,20 +122,22 @@
         return {
           time: e.startSecond,
           name: e.text,
-          team: 'GER'
+          raw: e
         };
       });
       chart6.data(timelineData).resizeToFit();
     });
   };
 
-  const addComment = (note) => {
+  const addNonte = (note) => {
     $.post('/note', {
       owner: video.id,
       startSecond: parseInt(player.getCurrentTime()),
       text: $('#noteText').val(),
     }, (data) => {
       updateTimeline();
+      $('#noteText').val('');
+      player.playVideo();
       console.log(data);
     });
   };
@@ -193,11 +195,21 @@
       }
     });
     chart6.axis.tickFormat(function (d) { return d + '\''; });
+    chart6.on('labelClick', (d, i) => {
+      player.seekTo(d.time, true);
+    });
+    chart6.on('dotClick', (d, i) => {
+      player.seekTo(d.time, true);
+    });
+
     updateTimeline();
   }
 
   $(() => {
-    $('#addNoteButton').click(addComment);
+    $('#addNoteButton').click(addNonte);
+    $('#noteText').bind('input propertychange', function (e) {
+      player.pauseVideo();
+    });
   });
 
   // 2. This code loads the IFrame Player API code asynchronously.
