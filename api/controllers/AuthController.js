@@ -34,7 +34,7 @@ module.exports = {
             res.view('500');
             return;
           }
-          res.redirect('/video/1/edit');
+          res.redirect('/search');
           return;
         });
       })(req, res);

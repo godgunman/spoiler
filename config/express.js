@@ -52,7 +52,7 @@ module.exports.http = {
     passport.use(new FacebookStrategy({
       clientID: "294821867642958", // Use your Facebook App Id
       clientSecret: "979aaeca8cec6ba9e56d78c293e84ef4", // Use your Facebook App Secret
-      callbackURL: "http://localhost:1337/auth/facebook/callback"
+      callbackURL: "https://spoiler-app.herokuapp.com/auth/facebook/callback"
     }, verifyHandler));
 
     app.use(passport.initialize());
