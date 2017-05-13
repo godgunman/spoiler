@@ -157,7 +157,7 @@
     $.get(`/note?owner=${video.id}`, (data) => {
       timelineData = data.map((e) => {
         if (e.user) {
-          userSet[e.id] = e.user;
+          userSet[e.user.id] = e.user;
           userToggle[e.id] = true;
         } else {
           userSet['guest'] = { id: 'guest', name: 'guest' };
@@ -172,6 +172,7 @@
         };
       });
       chart6.data(timelineData).resizeToFit();
+      $('#userFilterButtonGroup').empty();
       for (key in userSet) {
         // let toggleButton = $(`<button class="ui toggle button">${userSet[key].name}</button>`);
         let toggleButton = $(`<button id="${userSet[key].id}" class="ui toggle button">${userSet[key].name}</button>`);
