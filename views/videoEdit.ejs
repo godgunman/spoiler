@@ -75,7 +75,11 @@
 
         <div class="ui form">
           <div class="field">
-            <h3>Note</h3>
+            <h3>Note Title</h3>
+            <textarea id="noteTitle" rows="1"></textarea>
+          </div>
+          <div class="field">
+            <h3>Note Text</h3>
             <textarea id="noteText"></textarea>
           </div>
           <div id="addNoteButton" class="ui teal labeled icon button">
@@ -83,7 +87,7 @@
             <i class="edit icon"></i>
           </div>
           <div class="ui label">
-            You will add a note at <b id="playerSecond">0</b> seconds
+            You will add a note at <b id="playerSecond">00:00</b>
           </div>
         </div>
       </div>
@@ -127,12 +131,19 @@
     return query;
   }
 
+  function formatSecond(d) {
+    var minutes = Math.floor(d / 60);
+    var seconds = d - minutes * 60;
+    return ("0" + minutes).slice(-2) + ':' + ("0" + seconds).slice(-2);
+  }
+
   const updateTimeline = () => {
     $.get(`/note?owner=${video.id}`, (data) => {
       timelineData = data.map((e) => {
         return {
           time: e.startSecond,
-          name: e.text,
+          title: e.title || e.text,
+          text: e.text,
           raw: e
         };
       });
@@ -140,15 +151,17 @@
     });
   };
 
-  const addNonte = (note) => {
+  const addNote = (note) => {
     $.post('/note', {
       owner: video.id,
       startSecond: parseInt(player.getCurrentTime()),
       text: $('#noteText').val(),
+      title: $('#noteTitle').val(),
     }, (data) => {
       updateTimeline();
       $('#noteText').val('');
-      player.playVideo();
+      $('#noteTitle').val(''),
+        player.playVideo();
       console.log(data);
     });
   };
@@ -185,11 +198,11 @@
   const timelineInit = () => {
     chart6 = new d3KitTimeline('#timeline6', {
       direction: 'up',
-      initialWidth: 804,
+      initialWidth: 1024,
       scale: d3.scale.linear(),
       domain: [0, parseInt(player.getDuration())],
       margin: { left: 20, right: 20, top: 20, bottom: 30 },
-      textFn: function (d) { return d.name; },
+      textFn: function (d) { return d.title; },
       layerGap: 40,
       dotColor: color6,
       labelBgColor: color6,
@@ -205,7 +218,9 @@
         'comment-id': function (d) { return 1; }
       }
     });
-    chart6.axis.tickFormat(function (d) { return d + '\''; });
+    chart6.axis.tickFormat(function (d) {
+      return formatSecond(d);
+    });
     chart6.on('labelClick', (d, i) => {
       player.seekTo(d.time, true);
     });
@@ -217,8 +232,11 @@
   }
 
   $(() => {
-    $('#addNoteButton').click(addNonte);
+    $('#addNoteButton').click(addNote);
     $('#noteText').bind('input propertychange', function (e) {
+      player.pauseVideo();
+    });
+    $('#noteTitle').bind('input propertychange', function (e) {
       player.pauseVideo();
     });
   });
@@ -251,7 +269,8 @@
   function onPlayerReady(event) {
     console.log('[onPlayerReady]', event);
     setInterval(() => {
-      $('#playerSecond').text(parseInt(player.getCurrentTime()) + 1);
+      seconds = parseInt(player.getCurrentTime()) + 1;
+      $('#playerSecond').text(formatSecond(seconds));
     }, 100);
     timelineInit();
     event.target.playVideo();

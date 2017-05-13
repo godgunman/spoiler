@@ -8,6 +8,7 @@
 module.exports = {
 
   attributes: {
+    title: 'string',
     text: 'string',
     startSecond: 'integer',
     duration: { 
