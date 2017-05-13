@@ -11,9 +11,7 @@
   <title>Fixed Menu Example - Semantic</title>
 
   <link rel="stylesheet" type="text/css" href="/semantic/dist/semantic.min.css">
-  <link rel="stylesheet" type="text/css" href="/vis/dist/vis-timeline-graph2d.min.css">
 
-  <script src="/vis/dist/vis.min.js"></script>
   <script src="/jquery/dist/jquery-3.2.1.min.js"></script>
   <script src="/semantic/dist/semantic.min.js"></script>
   <script src="/moment/dist/moment.min.js"></script>
@@ -60,10 +58,10 @@
         </a>
 
         <% if (user.id !== -1) { %>
-        <a class="item" href="/logout">log out</a>
-        <% } else {%>
-        <a class="item" href="/welcome">log in</a>
-        <% } %>
+          <a class="item" href="/logout">log out</a>
+          <% } else {%>
+            <a class="item" href="/welcome">log in</a>
+            <% } %>
       </div>
     </div>
   </div>
@@ -102,6 +100,8 @@
     <div class="ui horizontal divider">
       Timeline
     </div>
+    <div id="userFilterButtonGroup" class="ui buttons">
+    </div>
   </div>
   <div class="ui center aligned container">
     <div class="timeline" id="timeline6">
@@ -122,6 +122,7 @@
   video = <%- JSON.stringify(video) %>;
   user = <%- JSON.stringify(user) %>;
   userSet = {};
+  userToggle = {};
   timelineData = [];
   chart6 = null;
   player;
@@ -143,24 +144,45 @@
     return ("0" + minutes).slice(-2) + ':' + ("0" + seconds).slice(-2);
   }
 
+  function filterTimelineData(data) {
+    return data.filter((v) => {
+      if (!v.user) return userToggle['guest'];
+      return userToggle[v.user.id];
+    })
+  }
+
   const updateTimeline = () => {
     userSet = {};
+    userToggle = {};
     $.get(`/note?owner=${video.id}`, (data) => {
       timelineData = data.map((e) => {
         if (e.user) {
           userSet[e.id] = e.user;
+          userToggle[e.id] = true;
         } else {
-          userSet['guest'] = 'guest';
+          userSet['guest'] = { id: 'guest', name: 'guest' };
+          userToggle['guest'] = true;
         }
         return {
           time: e.startSecond,
           title: e.title || e.text,
           text: e.text,
-          user: e.user,
+          user: e.user || { id: 'guest', name: 'guest' },
           raw: e
         };
       });
       chart6.data(timelineData).resizeToFit();
+      for (key in userSet) {
+        // let toggleButton = $(`<button class="ui toggle button">${userSet[key].name}</button>`);
+        let toggleButton = $(`<button id="${userSet[key].id}" class="ui toggle button">${userSet[key].name}</button>`);
+
+        toggleButton.click((e) => {
+          console.log('toggle button click', $(e.target));
+          userToggle[$(e.target).attr('id')] = !userToggle[$(e.target).attr('id')];
+          chart6.data(filterTimelineData(timelineData)).resizeToFit();
+        });
+        $('#userFilterButtonGroup').append(toggleButton);
+      }
     });
   };
 
@@ -206,7 +228,7 @@
   var colorScale = d3.scale.category10();
 
   function color6(d) {
-    return colorScale(d.user);
+    return colorScale(d.user.id);
   }
 
   const timelineInit = () => {
