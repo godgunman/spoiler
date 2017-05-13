@@ -18,6 +18,10 @@ module.exports = {
     owner: {
       model: 'video',
     },
+    user: {
+      model: 'user',
+      unique: true
+    }
   }
 };
 

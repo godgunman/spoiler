@@ -33,44 +33,6 @@
       max-width: 450px;
     }
   </style>
-  <script>
-    $(document)
-      .ready(function () {
-        $('.ui.form')
-          .form({
-            fields: {
-              email: {
-                identifier: 'email',
-                rules: [
-                  {
-                    type: 'empty',
-                    prompt: 'Please enter your e-mail'
-                  },
-                  {
-                    type: 'email',
-                    prompt: 'Please enter a valid e-mail'
-                  }
-                ]
-              },
-              password: {
-                identifier: 'password',
-                rules: [
-                  {
-                    type: 'empty',
-                    prompt: 'Please enter your password'
-                  },
-                  {
-                    type: 'length[6]',
-                    prompt: 'Your password must be at least 6 characters'
-                  }
-                ]
-              }
-            }
-          })
-          ;
-      })
-      ;
-  </script>
 </head>
 
 <body>
@@ -83,10 +45,10 @@
           Use social media to log in
         </div>
       </h2>
-      <form class="ui large form">
-        <button class="ui facebook button" >
+      <div class="ui large form">
+        <button id="logInFacebookButton" class="ui facebook button">
           <i class="facebook icon"></i>
-           <a href="/auth/facebook/">Facebook</a>
+          Facebook
         </button>
         <button class="ui twitter button">
           <i class="twitter icon"></i>
@@ -96,7 +58,7 @@
           <i class="google plus icon"></i>
           Google Plus
         </button>
-      </form>
+      </div>
       <div class="ui horizontal divider">
         Or
       </div>
@@ -107,5 +69,14 @@
   </div>
 
 </body>
+<script>
+  $(() => {
+    $('#logInFacebookButton').click((e) => {
+      var uri = '/auth/facebook/';
+      window.location = uri;
+    });
+  });
+
+</script>
 
 </html>

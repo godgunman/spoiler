@@ -33,10 +33,13 @@ module.exports.routes = {
   ***************************************************************************/
 
   '/': {
-    view: 'homepage'
+    view: 'search'
   },
   '/welcome': {
     view: 'welcome'
+  },
+  '/search': {
+    view: 'search'
   },
   '/login': {
     controller: 'AuthController',
@@ -46,10 +49,6 @@ module.exports.routes = {
     controller: 'AuthController',
     action: 'logout'
   },
-  '/home': {
-    controller: 'HomeController',
-    action: 'index'
-  }
 
   /***************************************************************************
   *                                                                          *

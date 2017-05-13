@@ -11,11 +11,23 @@ module.exports = {
     Video.findById(req.params.video_id, (error, video) => {
       let options = {
         video: video[0],
-        user: req.user || { name: 'guest' }
+        user: req.user || { name: 'guest', id: -1 }
       };
       console.log(options);
       res.view('videoEdit', options);
     });
+  },
+  'search': (req, res) => {
+    Video.findOneByLink(req.query.videoUrl, (error, video) => {
+      if (error) return res.json(error);
+      if (video) return res.redirect(`/video/${video.id}/edit`);
+      Video.create({
+        link: req.query.videoUrl,
+      }, (error, video) => {
+        return res.redirect(`/video/${video.id}/edit`);
+      });
+    });
+
   },
 };
 

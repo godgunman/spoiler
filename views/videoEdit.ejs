@@ -58,7 +58,12 @@
         <a class="item">
           <%= user.name %>
         </a>
-        <a class="item" href="/logout">Log Out</a>
+
+        <% if (user.id !== -1) { %>
+        <a class="item" href="/logout">log out</a>
+        <% } else {%>
+        <a class="item" href="/welcome">log in</a>
+        <% } %>
       </div>
     </div>
   </div>
@@ -157,6 +162,7 @@
       startSecond: parseInt(player.getCurrentTime()),
       text: $('#noteText').val(),
       title: $('#noteTitle').val(),
+      user: (user.id !== -1) ? user.id : undefined,
     }, (data) => {
       updateTimeline();
       $('#noteText').val('');
