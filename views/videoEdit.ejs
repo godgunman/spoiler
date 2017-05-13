@@ -121,6 +121,7 @@
 <script type="text/javascript">
   video = <%- JSON.stringify(video) %>;
   user = <%- JSON.stringify(user) %>;
+  userSet = {};
   timelineData = [];
   chart6 = null;
   player;
@@ -143,12 +144,19 @@
   }
 
   const updateTimeline = () => {
+    userSet = {};
     $.get(`/note?owner=${video.id}`, (data) => {
       timelineData = data.map((e) => {
+        if (e.user) {
+          userSet[e.id] = e.user;
+        } else {
+          userSet['guest'] = 'guest';
+        }
         return {
           time: e.startSecond,
           title: e.title || e.text,
           text: e.text,
+          user: e.user,
           raw: e
         };
       });
@@ -198,7 +206,7 @@
   var colorScale = d3.scale.category10();
 
   function color6(d) {
-    return colorScale(d.team);
+    return colorScale(d.user);
   }
 
   const timelineInit = () => {
