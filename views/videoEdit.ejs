@@ -116,6 +116,17 @@
   chart6 = null;
   player;
 
+  function parseQuery(url) {
+    var qstr = (new URL(url)).search;
+    var query = {};
+    var a = (qstr[0] === '?' ? qstr.substr(1) : qstr).split('&');
+    for (var i = 0; i < a.length; i++) {
+      var b = a[i].split('=');
+      query[decodeURIComponent(b[0])] = decodeURIComponent(b[1] || '');
+    }
+    return query;
+  }
+
   const updateTimeline = () => {
     $.get(`/note?owner=${video.id}`, (data) => {
       timelineData = data.map((e) => {
@@ -228,7 +239,7 @@
     player = new YT.Player('player', {
       height: '390',
       width: '640',
-      videoId: 'EjKSTTl_n8k',
+      videoId: parseQuery(video.link)['v'],
       events: {
         'onReady': onPlayerReady,
         'onStateChange': onPlayerStateChange
