@@ -173,9 +173,10 @@
       });
       chart6.data(timelineData).resizeToFit();
       $('#userFilterButtonGroup').empty();
+      let colorScale = d3.scale.category10();
       for (key in userSet) {
         // let toggleButton = $(`<button class="ui toggle button">${userSet[key].name}</button>`);
-        let toggleButton = $(`<button id="${userSet[key].id}" class="ui toggle button">${userSet[key].name}</button>`);
+        let toggleButton = $(`<button id="${userSet[key].id}" class="ui toggle button" style="color: ${colorScale(userSet[key].id)};">${userSet[key].name}</button>`);
 
         toggleButton.click((e) => {
           console.log('toggle button click', $(e.target));
